@@ -159,10 +159,11 @@ function showTable(tbl) {
   });
 }
 
-function getAllPollRecs(req, res) {
+function getAllEventRecs(req, res) {
   var retArr = [];
-  db.each("SELECT distinct name FROM polls", function(err, row) { 
-      retArr.push({ "name": row.name });
+  console.log("in getAllEventRecs ()");
+  db.each("SELECT * FROM events", function(err, row) { 
+      retArr.push({ "name": row.name, "owner": row.owner  });
       console.log(row.ID + ": " + row.name);
     },
       function complete(err, found) {
@@ -254,8 +255,8 @@ app.get('/showpoll', function(req, res) {
   });
 });
 
-app.get('/getAllPolls', function(req, res) {
-  getAllPollRecs(req, res);
+app.get('/getGoingData', function(req, res) {
+  getAllEventRecs(req, res);
 });
 
 app.get('/getMyPolls', function(req, res) {

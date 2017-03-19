@@ -26,6 +26,10 @@
         })
       }
       
+      function dataReadyGoing(data) {
+        console.log("data = " + JSON.stringify(data)); 
+      }
+      
       function dataReady(data) {
         
         // this is the event data. display this first. 
@@ -47,7 +51,11 @@
         $(".status").html(str);
         
         // now that the event data has been rendered, we need to query database for 'going' data
-        // TBD
+        $.ajax({
+            dataType: "json",
+            url: "/getGoingData",
+            success: dataReadyGoing
+          });
       }
       
       $(document).ready(function() {
