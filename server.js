@@ -339,9 +339,11 @@ app.get('/login', function(req, res) {
 
 app.get('/logout', function(req, res) {
   req.session.authuser = undefined;
+  req.session.authcity = undefined;
   
-  res.render('listpolls', {   
-    authuser: req.session.authuser
+  res.render('index', {   
+    authuser: req.session.authuser,
+    authcity: req.session.authcity
   });
 })
 

@@ -79,7 +79,8 @@
             desc = "No description available";
           else
             desc = desc.substring(0,300);
-          str += "<button class='going " + removeIllegalChars(title) + "' onclick='going(\"" + title + "\")' >0 GOING</button>"
+          if (authuser !== "")
+            str += "<button class='going " + removeIllegalChars(title) + "' onclick='going(\"" + title + "\")' >0 GOING</button>"
           str += "<span>" + data.events.event[i].start_time + " " + title + "</span>";
           str += "<p>" + desc + "</p>";
         }
@@ -104,7 +105,7 @@
           var password = $("#password").val();
           console.log("username = " + username);
           
-          var searchcity = authcity;
+          var searchcity = $("#stext").val();
           var url = "https://api.eventful.com/json/events/search?app_key=qkZtngr4pg4jdrzb&keywords=concert&location=" + searchcity + "&date=today";
           
           //$.getJSON(url dataReady);
@@ -142,6 +143,7 @@
       <!-- Required Div Starts Here -->
       <form id="form">
         <input type="button" id="submit" value="Search"/>
+        <input type="text" id="stext" value='<%= authcity %>'/>
       </form>
     </div>
     <div class="status">      
