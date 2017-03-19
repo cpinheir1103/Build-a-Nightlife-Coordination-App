@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Voting App</title>
+    <title>Nightlife App</title>
     <meta name="description" content="A cool thing made with Glitch">
     <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
     <meta charset="utf-8">
@@ -13,27 +13,46 @@
             crossorigin="anonymous"></script>
     <script>
       var authuser = '<%= authuser %>';
-      
-      function loginError() {        
-        console.log("login error!!!");
-        $(".status").html("<p style='color:red'>Login Unsuccessful</p>");
-      }
-      
-      function loginSuccess() {        
-        console.log("login success!!!");
-        $(".status").html("<p style='color:blue'>Login Successful</p>");
-        window.location.replace("/");
+            
+      function dataReady(data) {
+        var str = "";
+        var len = data.events.event.length;
+        console.log("data = " + JSON.stringify(data));
+        for (var i=0; i<len; i++) {          
+          var desc = data.events.event[i].description;
+          if (desc === null)
+            desc = "No description available";
+          else
+            desc = desc.substring(0,300);
+          str += "<p>" + data.events.event[i].start_time + " " + data.events.event[i].title + "</p>";
+          str += "<p>" + desc + "</p>";
+        }
+        //console.log("str = " + JSON.stringify(str));       
+        $(".status").html(str);
       }
       
       $(document).ready(function() {
+        
+        
         myHeader();         
         
         $("#submit").click(function() {
-          var username = $("#username").val();        
-          var password = $("#password").val();
-          console.log("username = " + username);
+          //var username = $("#username").val();        
+          //var password = $("#password").val();
+          //console.log("username = " + username);
+          
+          var url = "https://api.eventful.com/json/events/search?app_key=qkZtngr4pg4jdrzb&keywords=concert&location=phoenix&date=today";
+          
+          //$.getJSON(url dataReady);
+          
+          $.ajax({
+            dataType: "jsonp",
+            url: url,
+            success: dataReady
+          });
           
           // now post to node server
+          /*
           $.ajax({
               url: '/proclogin', 
               type: 'POST', 
@@ -45,6 +64,7 @@
                 setTimeout(function () { loginError(); }, 1000) 
               }
           });
+          */
           
         });
       });
@@ -56,14 +76,8 @@
     </header>
     <div id="mainform">   
       <!-- Required Div Starts Here -->
-      <form id="form">
-        <h3>Login</h3>
-        <p id="returnmessage"></p>
-        <label>Username: <span>*</span></label>
-        <input type="text" id="username" placeholder="Username"/><br/>
-        <label>Password:</label>
-        <input type="password" id="password" placeholder="Password"/><br/>  
-        <input type="button" id="submit" value="Login"/>
+      <form id="form">    
+        <input type="button" id="submit" value="Search"/>
       </form>
     </div>
     <div class="status">      

@@ -24,11 +24,11 @@ app.set('view engine', 'html');
 ////// DATABASE ////////////////////////////////////////////////////////
 if (false) {
   db.serialize(function() {
-    //db.run("DROP TABLE users");
+    //db.run("DROP TABLE events");
     //console.log("DROPPING TABLE!");
-    //db.run("CREATE TABLE polls ( ID	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT, owner INTEGER)");
+    //db.run("CREATE TABLE events ( ID	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT, owner TEXT)");
     //db.run("CREATE TABLE users ( ID	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, username TEXT, password TEXT, city TEXT)");  
-    //console.log("CREATING TABLE!");
+    console.log("CREATING TABLE!");
   });
 }
 
@@ -72,16 +72,7 @@ function procLogin(req, res) {
   
 }
 
-function newPollRec(name,option,votes,owner) {
-  db.serialize(function() {
-    var stmt = db.prepare("INSERT INTO polls(name, option, votes, owner) VALUES(?,?,?,?)");
-    stmt.run(name, option, votes, owner);  
-    stmt.finalize();
-  });
-  
-  showTable("polls");
-}
-
+/*
 function procNewPoll(req, res) {
   var rb = req.body;
   var userID;  
@@ -102,10 +93,11 @@ function procNewPoll(req, res) {
   });  
 
 }
+*/
 
 function procDelPoll(rb) {  
   db.serialize(function() {
-    var stmt = db.prepare("DELETE FROM polls where name = '" + rb.name + "'");
+    var stmt = db.prepare("DELETE FROM events where name = '" + rb.name + "'");
     stmt.run();  
     stmt.finalize();
   });
@@ -113,16 +105,50 @@ function procDelPoll(rb) {
   showTable("polls");
 }
 
-function procVote(rb) {  
-  //rb.name  rb.options  
+function newEventRec(req, res) {
+  console.log("newEventRec");
   db.serialize(function() {
-    //UPDATE polls SET votes = votes + 1  WHERE name = '' and option = '';
-    var stmt = db.prepare("UPDATE polls SET votes = votes + 1  WHERE name = '" + rb.name + "' and option = '" + rb.options + "';");
-    stmt.run();  
+    var stmt = db.prepare("INSERT INTO events(name, owner) VALUES(?,?)");
+    stmt.run(req.body.title, req.session.authuser);
     stmt.finalize();
   });
   
-  showTable("polls");
+  showTable("events");
+}
+
+function delEventRec(req, res) {
+  console.log("delEventRec");
+  db.serialize(function() {
+    var stmt = db.prepare("DELETE FROM events where name='" + req.body.title + "' and owner='" + req.session.authuser + "'");
+    stmt.run();
+    stmt.finalize();
+  });
+  
+  showTable("events");
+}
+
+function procGoing(req, res) {  
+  var rb = req.body;
+  var eventFound = false;
+  console.log("in procGoing()");
+  // if event exists for authuser, delete it....otherwise add it. 
+  db.serialize(function() {       
+    db.each("SELECT name FROM events where name ='" + rb.title + "'", function(err, row) { 
+      console.log("procgoing: " + row.ID + ": " + row.name);
+      eventFound = true;
+    },
+      function complete(err, found) {
+        console.log("select complete.");
+        if (eventFound) {  // found, so delete it.
+          delEventRec(req, res);
+        }
+        else { // not found, so add it.
+          newEventRec(req,res);
+        }
+    });
+  });    
+  
+  //showTable("events");
 }
 
 function showTable(tbl) {
@@ -194,14 +220,14 @@ app.get("/", function (req, res) {
       });
 });
 
-app.get('/newpoll', function(req, res) {
+app.get('/list', function(req, res) {
    if (req.session.authuser === undefined) {
-     res.render('listpolls', {   
+     res.render('/', {   
        authuser: req.session.authuser
      });
    }
    else {
-      res.render('newpoll', {   
+      res.render('list', {   
         authuser: req.session.authuser
       });
    }
@@ -261,11 +287,10 @@ app.post('/saveoption', function(req,res){
     procNewPoll(req,res);    
 });
 
-app.post('/vote', function(req,res){
+app.post('/going', function(req,res){
     console.log(req.body);
-    console.log("name=" + req.body.name);
-    console.log("option=" + req.body.options);
-    procVote(req.body);    
+    console.log("title=" + req.body.title);
+    procGoing(req, res);    
 });
 
 app.post('/procregister', function(req,res){
