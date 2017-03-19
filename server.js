@@ -74,39 +74,6 @@ function procLogin(req, res) {
   
 }
 
-/*
-function procNewPoll(req, res) {
-  var rb = req.body;
-  var userID;  
-  //console.log("req.session.authuser=" + req.session.authuser);
-  /// get ID of logged in user first...
-  db.serialize(function(url) {
-    db.each("SELECT * FROM users where username = '" + req.session.authuser + "'", function(err, row) { 
-      userID = row.ID;
-      console.log("userID=" + userID);
-    },
-      function complete(err, found) {
-        // db select has completed, so now add new poll records
-        var optsArr = (rb.options).split(",");  // split options string into an array of options
-        for (var i=0; i<optsArr.length; i++)
-          newPollRec(rb.name, optsArr[i], 1, userID);
-        res.end('{"success" : "Updated Successfully", "status" : 200}');
-    });   
-  });  
-
-}
-*/
-
-function procDelPoll(rb) {  
-  db.serialize(function() {
-    var stmt = db.prepare("DELETE FROM events where name = '" + rb.name + "'");
-    stmt.run();  
-    stmt.finalize();
-  });
-  
-  showTable("polls");
-}
-
 function newEventRec(req, res) {
   console.log("newEventRec");
   db.serialize(function() {
@@ -175,32 +142,6 @@ function getAllEventRecs(req, res) {
   });
 }
 
-function getMyPollRecs(req, res) {
-  var retArr = [];
-  db.each("SELECT distinct name FROM (polls INNER JOIN users ON polls.owner=users.ID) where users.username='" + req.session.authuser + "'", function(err, row) { 
-      retArr.push({ "name": row.name });
-      console.log("mypollrec: " + row.ID + ": " + row.name);
-    },
-      function complete(err, found) {
-        res.writeHead(200, {"Content-Type": "application/json"});
-        res.write(JSON.stringify(retArr)); 
-        res.end();
-  });
-}
-
-function getAllOptionRecs(req, res) {
-  var retArr = [];
-  //req.query={"optname":"who are the cutest actresses"}
-  db.each("SELECT * FROM polls where name='" + req.query.optname + "'", function(err, row) {
-      retArr.push({ "name": row.name, "option": row.option, "votes": row.votes });
-      console.log(row.ID + ": " + row.name + ": " + row.option + ": " + row.votes);
-    },
-      function complete(err, found) {
-        res.writeHead(200, {"Content-Type": "application/json"});
-        res.write(JSON.stringify(retArr)); 
-        res.end();
-  });
-}
 
 
 ////// ROUTING ///////////////////////////////////////////////////////////////////
@@ -239,57 +180,10 @@ app.get('/list', function(req, res) {
   //res.sendFile(__dirname + '/views/newpoll.html');
 });
 
-app.get('/listpolls', function(req, res) {  
-  console.log("req.session.authuser=" + req.session.authuser);
-  res.render('listpolls', {   
-    authuser: req.session.authuser
-  });
-  
-  //res.sendFile(__dirname + '/views/listpolls.html'); 
-});
-
-app.get('/showpoll', function(req, res) {
-  console.log("req.parms=" + JSON.stringify(req.params));
-  console.log("req.query=" + JSON.stringify(req.query));
-  
-  res.render('showpoll', {   
-    pollname: req.query.name,
-    authuser: req.session.authuser
-  });
-});
-
 app.get('/getGoingData', function(req, res) {
   getAllEventRecs(req, res);
 });
 
-app.get('/getMyPolls', function(req, res) {
-  getMyPollRecs(req, res);
-});
-
-app.get('/getAllOptions', function(req, res) {
-  console.log("opts req.parms=" + JSON.stringify(req.params));
-  console.log("opts req.query=" + JSON.stringify(req.query));
-  getAllOptionRecs(req, res);
-});
-
-app.post('/savepoll', function(req,res){
-    console.log(req.body);
-    console.log("name=" + req.body.name);
-    procNewPoll(req,res);    
-});
-
-app.post('/deletepoll', function(req,res){
-    console.log(req.body);
-    console.log("name=" + req.body.name);
-    procDelPoll(req.body);    
-});
-
-app.post('/saveoption', function(req,res){
-    console.log(req.body);
-    console.log("name=" + req.body.name);
-    console.log("option=" + req.body.options);
-    procNewPoll(req,res);    
-});
 
 app.post('/going', function(req,res){
     console.log(req.body);
@@ -310,20 +204,6 @@ app.post('/proclogin', function(req,res){
     procLogin(req, res);    
 });
 
-app.get('/mypolls', function(req, res) {
-   if (req.session.authuser === undefined) {
-     res.render('listpolls', {   
-       authuser: req.session.authuser
-     });
-   }
-   else {
-     res.render('mypolls', {   
-        authuser: req.session.authuser
-     });
-     
-     //res.sendFile(__dirname + '/views/mypolls.html');
-   }  
-})
 
 app.get('/register', function(req, res) { 
   res.render('register', {   

@@ -116,20 +116,6 @@
             success: dataReady
           });
           
-          // now post to node server
-          /*
-          $.ajax({
-              url: '/proclogin', 
-              type: 'POST', 
-              contentType: 'application/json', 
-              data: JSON.stringify({"username":username, "password":password}),
-              success:  function () { setTimeout(function () { loginSuccess(); }, 1000) },
-              error: function (json) { 
-                console.log("json.status=" + json.status);
-                setTimeout(function () { loginError(); }, 1000) 
-              }
-          });
-          */
           
         });
       });
