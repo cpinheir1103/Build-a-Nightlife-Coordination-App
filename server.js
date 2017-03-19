@@ -25,7 +25,8 @@ app.set('view engine', 'html');
 if (false) {
   db.serialize(function() {
     //db.run("DROP TABLE events");
-    //console.log("DROPPING TABLE!");
+    //db.run("DROP TABLE users");
+    console.log("DROPPING TABLE!");
     //db.run("CREATE TABLE events ( ID	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT, owner TEXT)");
     //db.run("CREATE TABLE users ( ID	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, username TEXT, password TEXT, city TEXT)");  
     console.log("CREATING TABLE!");
@@ -40,8 +41,8 @@ if (false) {
 
 function procRegister(rb) {
   db.serialize(function() {
-    var stmt = db.prepare("INSERT INTO users(username, password) VALUES(?,?)");
-    stmt.run(rb.username, rb.password);  
+    var stmt = db.prepare("INSERT INTO users(username, password, city) VALUES(?,?,?)");
+    stmt.run(rb.username, rb.password, rb.city);  
     stmt.finalize();
   });
    
@@ -55,6 +56,7 @@ function procLogin(req, res) {
     function(err, row) { 
       //console.log("row.username=" + row.username); 
       req.session.authuser = row.username;
+      req.session.authcity = row.city;
     },
       function complete(err, found) {
         //res.status(500).send({error: 'you have an error'}); 
@@ -217,7 +219,8 @@ app.get("/", function (req, res) {
   //res.redirect('/listpolls');
   
   res.render('index', {   
-        authuser: req.session.authuser
+        authuser: req.session.authuser,
+        authcity: req.session.authcity
       });
 });
 

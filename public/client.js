@@ -1,8 +1,6 @@
  function myHeader() {
-    var str = "<a href=\"listpolls\">All Polls</a><span>&#32;</span>";
+    var str = "";
     if (authuser !== "") {
-      str += "<a href=\"newpoll\">New Poll</a><span>&#32;</span>";
-      str += "<a href=\"mypolls\">My Polls</a><span>&#32;</span>";
       str += "<a href=\"logout\">Logout:" + authuser + "</a><span>&#32;</span>";
     }
    else {
